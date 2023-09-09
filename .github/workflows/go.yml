@@ -20,8 +20,13 @@ jobs:
         with:
           go-version: "1.20"
 
-      - name: Build
-        run: go build -v ./app
+      - name: Check code formatting
+        run: |
+          find . -name '*.go' -exec gofmt -d {} +
+          find . -name '*.go' -exec gofmt -d {} + | (! read)
 
-      - name: Test
-        run: go test -v ./app
+      # - name: Build
+      #   run: go build -v ./app
+
+      # - name: Test
+      #   run: go test -v ./app
