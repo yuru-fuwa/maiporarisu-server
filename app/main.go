@@ -88,7 +88,7 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	flag := false
 	for index, item := range tasks {
-		if item.TaskID == params["id"] { //0, 1,  2, 3, 4
+		if item.TaskID == params["id"] {
 			tasks = append(tasks[:index], tasks[index+1:]...)
 			var task Tasks
 			_ = json.NewDecoder(r.Body).Decode(&task)
