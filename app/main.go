@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 )
 
 type Tasks struct {
@@ -123,12 +121,7 @@ func handleRoutes() {
 }
 
 func main() {
-	db, err := sql.Open("postgres", "host=sv-maiporarisu.postgres.database.azure.com port=5432 dbname={tasks} user=komugi8@sv-maiporarisu password={yourpassword} sslmode=require")
-    if err != nil {
-        log.Fatalln("接続失敗", err)
-    }
-    defer db.Close()
-	// allTasks()
-	// fmt.Println("Hello World")
-	// handleRoutes()
+	allTasks()
+	fmt.Println("Hello World")
+	handleRoutes()
 }
