@@ -41,10 +41,12 @@ func allTasks() {
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("I am home")
 }
+
 func getTasks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(tasks)
 }
+
 func getTask(w http.ResponseWriter, r *http.Request) {
 	taskID := mux.Vars(r)
 	flag := false
@@ -59,6 +61,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	}
 }
+
 func createTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var task Tasks
@@ -67,6 +70,7 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	tasks = append(tasks, task)
 	json.NewEncoder(w).Encode(task)
 }
+
 func deleteTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
@@ -83,6 +87,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	}
 }
+
 func updateTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
