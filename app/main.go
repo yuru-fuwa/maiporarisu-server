@@ -1,14 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 type Tasks struct {
@@ -121,7 +125,26 @@ func handleRoutes() {
 }
 
 func main() {
-	allTasks()
-	fmt.Println("Hello World")
-	handleRoutes()
+	err := godotenv.Load(fmt.Sprintf("../%s.env", os.Getenv("GO_ENV")))
+    if err != nil {
+        fmt.Println("error")
+    }
+
+    dbg := os.Getenv("DB")
+    connectionPass := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=require",os.Getenv("HOST"),os.Getenv("PORT"),os.Getenv("DBNAME"),os.Getenv("USER"),os.Getenv("PASSWORD"))
+
+    fmt.Printf("DB: %s\n", dbg)
+    fmt.Printf("CONNECTIONPASS: %s\n", connectionPass)
+	
+	db, error := sql.Open(dbg, connectionPass)
+	if error != nil {
+		log.Fatalln("接続失敗", error)
+	}
+	defer db.Close()
+	if error := db.Ping(); error != nil {
+		log.Fatal("PingError: ", err)
+	}
+	// allTasks()
+	// fmt.Println("Hello World")
+	// handleRoutes()
 }
