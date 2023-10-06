@@ -12,27 +12,27 @@ import (
 )
 
 type Tasks struct {
-	TaskID    string `json:"task_id"`
-	TaskTime  string `json:"task_time"`
-	TaskName  string `json:"task_name"`
-	TaskCheck bool   `json:"task_check"`
+	Id    string `json:"id"`
+	Time  string `json:"time"`
+	Name  string `json:"name"`
+	Check bool   `json:"check"`
 }
 
 var tasks []Tasks
 
 func allTasks() {
 	task := Tasks{
-		TaskID:    "1",
-		TaskTime:  "21:00",
-		TaskName:  "Task1",
-		TaskCheck: false,
+		Id:    "1",
+		Time:  "21:00",
+		Name:  "Task1",
+		Check: false,
 	}
 	tasks = append(tasks, task)
 	task2 := Tasks{
-		TaskID:    "2",
-		TaskTime:  "22:00",
-		TaskName:  "Task2",
-		TaskCheck: false,
+		Id:    "2",
+		Time:  "22:00",
+		Name:  "Task2",
+		Check: false,
 	}
 	tasks = append(tasks, task2)
 	fmt.Println("your tasks are", tasks)
@@ -51,7 +51,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	taskID := mux.Vars(r)
 	flag := false
 	for i := 0; i < len(tasks); i++ {
-		if taskID["id"] == tasks[i].TaskID {
+		if taskID["id"] == tasks[i].Id {
 			json.NewEncoder(w).Encode(tasks[i])
 			flag = true
 			break
@@ -66,7 +66,7 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var task Tasks
 	_ = json.NewDecoder(r.Body).Decode(&task)
-	task.TaskID = strconv.Itoa(rand.Intn(1000))
+	task.Id = strconv.Itoa(rand.Intn(1000))
 	tasks = append(tasks, task)
 	json.NewEncoder(w).Encode(task)
 }
@@ -76,7 +76,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	flag := false
 	for index, item := range tasks {
-		if item.TaskID == params["id"] {
+		if item.Id == params["id"] {
 			tasks = append(tasks[:index], tasks[index+1:]...)
 			flag = true
 			json.NewEncoder(w).Encode(map[string]string{"status": "Success"})
@@ -93,11 +93,11 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	flag := false
 	for index, item := range tasks {
-		if item.TaskID == params["id"] {
+		if item.Id == params["id"] {
 			tasks = append(tasks[:index], tasks[index+1:]...)
 			var task Tasks
 			_ = json.NewDecoder(r.Body).Decode(&task)
-			task.TaskID = params["id"]
+			task.Id = params["id"]
 			tasks = append(tasks, task)
 			flag = true
 			json.NewEncoder(w).Encode(task)
