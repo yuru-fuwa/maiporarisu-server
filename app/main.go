@@ -57,7 +57,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-	if flag == false {
+	if !flag {
 		json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	}
 }
@@ -83,7 +83,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if flag == false {
+	if !flag {
 		json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	}
 }
@@ -104,7 +104,7 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if flag == false {
+	if !flag {
 		json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	}
 }
