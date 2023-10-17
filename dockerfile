@@ -11,14 +11,20 @@ ENV GO111MODULE=on \
 WORKDIR /app
 
 # Copy and download dependency using go mod
-COPY ./app/go.mod .
-COPY ./app/go.sum .
+COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
 # Copy the code into the container
-COPY ./app/main.go .
+COPY . .
+
+RUN GOOS=linux go build -o main ./cmd/main.go
+
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest
+
+COPY --from=builder /app/main /app/main
 
 EXPOSE 8080
 
 # Set command for the container
-CMD ["go", "run", "./main.go"]
+CMD ["/app/main"]
