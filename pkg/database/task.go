@@ -1,9 +1,14 @@
 package database
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Task struct {
-	ID    int `gorm:"autoincrement"`
+	gorm.Model
+	ID    int `gorm:"primaryKey,autoincrement"`
 	Time  time.Time
 	Name  string `gorm:"size:256"`
 	Check bool

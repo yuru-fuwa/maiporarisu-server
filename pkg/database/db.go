@@ -15,7 +15,7 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	host := cfg.DBHost
 	port := cfg.DBPort
 	name := cfg.DBName
-
+	//繋がらなかったらsslmodeをrequireにしよう！
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, name)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

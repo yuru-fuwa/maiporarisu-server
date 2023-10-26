@@ -11,7 +11,7 @@ import (
 
 type (
 	Task struct {
-		Id    string `json:"id"`
+		ID    string `json:"id"`
 		Time  string `json:"time"`
 		Name  string `json:"name"`
 		Check bool   `json:"check"`
@@ -23,10 +23,10 @@ type (
 	}
 
 	GetTaskRequest struct {
-		Id string `json:"id"`
+		ID string `json:"id"`
 	}
 	GetTaskResponse struct {
-		Id    string `json:"id"`
+		ID    string `json:"id"`
 		Time  string `json:"time"`
 		Name  string `json:"Name"`
 		Check string `json:"check"`
@@ -39,12 +39,12 @@ type (
 	CreateTaskResponse struct{}
 
 	DeleteTaskRequest struct {
-		Id string `param:"id"`
+		ID string `param:"id"`
 	}
 	DeleteTaskResponse struct{}
 
 	UpdateTaskRequest struct {
-		Id    string `param:"id"`
+		ID    string `param:"id"`
 		Time  string `json:"time"`
 		Name  string `json:"name"`
 		Check bool   `json:"check"`
@@ -76,7 +76,7 @@ func (h *taskHandler) GetTask(c echo.Context) error {
 	// taskID := mux.Vars(r)
 	// flag := false
 	// for i := 0; i < len(tasks); i++ {
-	// 	if taskID["id"] == tasks[i].Id {
+	// 	if taskID["id"] == tasks[i].ID {
 	// 		json.NewEncoder(w).Encode(tasks[i])
 	// 		flag = true
 	// 		break
@@ -112,7 +112,7 @@ func (h *taskHandler) DeleteTask(c echo.Context) error {
 	// params := mux.Vars(r)
 	// flag := false
 	// for index, item := range tasks {
-	// 	if item.Id == params["id"] {
+	// 	if item.ID == params["id"] {
 	// 		tasks = append(tasks[:index], tasks[index+1:]...)
 	// 		flag = true
 	// 		json.NewEncoder(w).Encode(map[string]string{"status": "Success"})
@@ -122,6 +122,7 @@ func (h *taskHandler) DeleteTask(c echo.Context) error {
 	// if !flag {
 	// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
 	// }
+
 	return nil
 }
 
@@ -130,11 +131,11 @@ func (h *taskHandler) UpdateTask(c echo.Context) error {
 	// params := mux.Vars(r)
 	// flag := false
 	// for index, item := range tasks {
-	// 	if item.Id == params["id"] {
+	// 	if item.ID == params["id"] {
 	// 		tasks = append(tasks[:index], tasks[index+1:]...)
 	// 		var task Tasks
 	// 		_ = json.NewDecoder(r.Body).Decode(&task)
-	// 		task.Id = params["id"]
+	// 		task.ID = params["id"]
 	// 		tasks = append(tasks, task)
 	// 		flag = true
 	// 		json.NewEncoder(w).Encode(task)
