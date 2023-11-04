@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"sqlite/pkg/database"
 	"time"
@@ -108,23 +109,37 @@ func (h *taskHandler) CreateTask(c echo.Context) error {
 }
 
 func (h *taskHandler) DeleteTask(c echo.Context) error {
-	// w.Header().Set("Content-Type", "application/json")
-	// params := mux.Vars(r)
-	// flag := false
-	// for index, item := range tasks {
-	// 	if item.ID == params["id"] {
-	// 		tasks = append(tasks[:index], tasks[index+1:]...)
-	// 		flag = true
-	// 		json.NewEncoder(w).Encode(map[string]string{"status": "Success"})
-	// 		return
-	// 	}
-	// }
-	// if !flag {
-	// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
-	// }
+	task := &DeleteTaskRequest{}
+	if err := c.Bind(task); err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
 
-	return nil
+	log.Print("TaskID:" + task.ID)
+
+	deTask := &database.Task{}
+	if err := h.db.Where("id = ?", task.ID).Delete(&deTask).Error; err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusBadRequest, "failed to delete task")
+	}
+	log.Print("delete task")
+	return c.JSON(http.StatusOK, "success")
 }
+
+// w.Header().Set("Content-Type", "application/json")
+// params := mux.Vars(r)
+// flag := false
+// for index, item := range tasks {
+// 	if item.ID == params["id"] {
+// 		tasks = append(tasks[:index], tasks[index+1:]...)
+// 		flag = true
+// 		json.NewEncoder(w).Encode(map[string]string{"status": "Success"})
+// 		return
+// 	}
+// }
+// if !flag {
+// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
+// }
 
 func (h *taskHandler) UpdateTask(c echo.Context) error {
 	// w.Header().Set("Content-Type", "application/json")

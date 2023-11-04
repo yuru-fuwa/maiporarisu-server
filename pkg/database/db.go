@@ -24,6 +24,8 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 
 	log.Print("connect to database")
 
+	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
+
 	db.AutoMigrate(&Task{})
 
 	return db, nil
