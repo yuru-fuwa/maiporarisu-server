@@ -12,10 +12,11 @@ import (
 
 type (
 	Task struct {
-		ID    string `json:"id"`
-		Time  string `json:"time"`
-		Name  string `json:"name"`
-		Check bool   `json:"check"`
+		gorm.Model
+		ID string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
+		Time  time.Time
+		Name  string `gorm:"size:256"`
+		Check bool
 	}
 
 	GetTasksRequest  struct{}
@@ -68,7 +69,14 @@ func NewTaskHandler(db *gorm.DB) *taskHandler {
 }
 
 func (h *taskHandler) GetTasks(c echo.Context) error {
-	tasks := map[string]string{"hoge": "fuga"}
+	// tasks := map[string]string{"hoge": "fuga"}
+	// return c.JSON(http.StatusOK, tasks)
+	tasks := []Task{}
+
+	if err := h.db.Find(&tasks).Error; err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusBadRequest, "failed to get tasks")
+	}
 	return c.JSON(http.StatusOK, tasks)
 }
 
