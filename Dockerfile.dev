@@ -1,0 +1,18 @@
+# for development
+FROM golang:1.21.1-alpine3.17
+
+RUN apk update && apk add --no-cache git make
+
+ENV GO_ENV /go/src/app/
+
+WORKDIR ${GO_ENV}
+
+RUN go install github.com/cosmtrek/air@latest
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+CMD ["air", "-c", ".air.toml"]
