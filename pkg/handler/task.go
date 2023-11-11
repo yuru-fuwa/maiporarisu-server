@@ -69,8 +69,6 @@ func NewTaskHandler(db *gorm.DB) *taskHandler {
 }
 
 func (h *taskHandler) GetTasks(c echo.Context) error {
-	// tasks := map[string]string{"hoge": "fuga"}
-	// return c.JSON(http.StatusOK, tasks)
 	tasks := []Task{}
 
 	if err := h.db.Find(&tasks).Error; err != nil {
@@ -134,21 +132,6 @@ func (h *taskHandler) DeleteTask(c echo.Context) error {
 	return c.JSON(http.StatusOK, "success")
 }
 
-// w.Header().Set("Content-Type", "application/json")
-// params := mux.Vars(r)
-// flag := false
-// for index, item := range tasks {
-// 	if item.ID == params["id"] {
-// 		tasks = append(tasks[:index], tasks[index+1:]...)
-// 		flag = true
-// 		json.NewEncoder(w).Encode(map[string]string{"status": "Success"})
-// 		return
-// 	}
-// }
-// if !flag {
-// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
-// }
-
 func (h *taskHandler) UpdateTask(c echo.Context) error {
 	task := &UpdateTaskRequest{}
 	if err := c.Bind(task); err != nil {
@@ -177,22 +160,3 @@ func (h *taskHandler) UpdateTask(c echo.Context) error {
 	log.Print("update task")
 	return c.JSON(http.StatusOK, "success")
 }
-
-// w.Header().Set("Content-Type", "application/json")
-// params := mux.Vars(r)
-// flag := false
-// for index, item := range tasks {
-// 	if item.ID == params["id"] {
-// 		tasks = append(tasks[:index], tasks[index+1:]...)
-// 		var task Tasks
-// 		_ = json.NewDecoder(r.Body).Decode(&task)
-// 		task.ID = params["id"]
-// 		tasks = append(tasks, task)
-// 		flag = true
-// 		json.NewEncoder(w).Encode(task)
-// 		return
-// 	}
-// }
-// if !flag {
-// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
-// }
