@@ -13,7 +13,7 @@ import (
 type (
 	Task struct {
 		gorm.Model
-		ID string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
+		ID    string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
 		Time  time.Time
 		Name  string `gorm:"size:256"`
 		Check bool
@@ -150,23 +150,49 @@ func (h *taskHandler) DeleteTask(c echo.Context) error {
 // }
 
 func (h *taskHandler) UpdateTask(c echo.Context) error {
-	// w.Header().Set("Content-Type", "application/json")
-	// params := mux.Vars(r)
-	// flag := false
-	// for index, item := range tasks {
-	// 	if item.ID == params["id"] {
-	// 		tasks = append(tasks[:index], tasks[index+1:]...)
-	// 		var task Tasks
-	// 		_ = json.NewDecoder(r.Body).Decode(&task)
-	// 		task.ID = params["id"]
-	// 		tasks = append(tasks, task)
-	// 		flag = true
-	// 		json.NewEncoder(w).Encode(task)
-	// 		return
-	// 	}
-	// }
-	// if !flag {
-	// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
-	// }
-	return nil
+	task := &UpdateTaskRequest{}
+	if err := c.Bind(task); err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+
+	log.Print("TaskID:" + task.ID)
+
+	t, err := time.Parse("2006-01-02 15:04:05", task.Time)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+
+	upTask := &database.Task{}
+	upTask.ID = task.ID
+	upTask.Name = task.Name
+	upTask.Time = t
+	upTask.Check = task.Check
+
+	if err := h.db.Where("id = ?", task.ID).Save(&upTask).Error; err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusBadRequest, "failed to update task")
+	}
+
+	log.Print("update task")
+	return c.JSON(http.StatusOK, "success")
 }
+
+// w.Header().Set("Content-Type", "application/json")
+// params := mux.Vars(r)
+// flag := false
+// for index, item := range tasks {
+// 	if item.ID == params["id"] {
+// 		tasks = append(tasks[:index], tasks[index+1:]...)
+// 		var task Tasks
+// 		_ = json.NewDecoder(r.Body).Decode(&task)
+// 		task.ID = params["id"]
+// 		tasks = append(tasks, task)
+// 		flag = true
+// 		json.NewEncoder(w).Encode(task)
+// 		return
+// 	}
+// }
+// if !flag {
+// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
+// }
