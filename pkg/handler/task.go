@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"sqlite/pkg/database"
@@ -25,7 +26,7 @@ type (
 	}
 
 	GetTaskRequest struct {
-		ID string `json:"id"`
+		ID string `param:"id"`
 	}
 	GetTaskResponse struct {
 		ID    string `json:"id"`
@@ -35,7 +36,7 @@ type (
 	}
 
 	CreateTaskRequest struct {
-		Time string `json:"time"`
+		Time string `json:"time" validate:"required,datetime=2006-01-02 15:04:05"`
 		Name string `json:"name"`
 	}
 	CreateTaskResponse struct{}
@@ -46,7 +47,7 @@ type (
 	DeleteTaskResponse struct{}
 
 	UpdateTaskRequest struct {
-		ID    string `param:"id"`
+		ID    string `param:"id" validator:"required,uuid"`
 		Time  string `json:"time"`
 		Name  string `json:"name"`
 		Check bool   `json:"check"`
@@ -72,27 +73,29 @@ func (h *taskHandler) GetTasks(c echo.Context) error {
 	tasks := []Task{}
 
 	if err := h.db.Find(&tasks).Error; err != nil {
-		log.Print(err)
+		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "failed to get tasks")
 	}
 	return c.JSON(http.StatusOK, tasks)
 }
 
 func (h *taskHandler) GetTask(c echo.Context) error {
-	// tasks := map[string]string{"hoge": "fuga"}
-	// taskID := mux.Vars(r)
-	// flag := false
-	// for i := 0; i < len(tasks); i++ {
-	// 	if taskID["id"] == tasks[i].ID {
-	// 		json.NewEncoder(w).Encode(tasks[i])
-	// 		flag = true
-	// 		break
-	// 	}
-	// }
-	// if !flag {
-	// 	json.NewEncoder(w).Encode(map[string]string{"status": "Error"})
-	// }
-	return nil
+	req := &GetTaskRequest{}
+	if err := c.Bind(req); err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+
+	task := &Task{}
+	if err := h.db.Where("id = ?", req.ID).First(&task).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, "task not found")
+		}
+		c.Logger().Error(err)
+		return c.JSON(http.StatusInternalServerError, "failed to get task")
+	}
+
+	return c.JSON(http.StatusOK, task)
 }
 
 func (h *taskHandler) CreateTask(c echo.Context) error {
@@ -100,33 +103,43 @@ func (h *taskHandler) CreateTask(c echo.Context) error {
 	if err := c.Bind(task); err != nil {
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
-	t, err := time.Parse("2006-01-02 15:04:05", task.Time)
+	if err := c.Validate(task); err != nil {
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+	t, err := time.Parse(time.DateTime, task.Time)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
 
-	result := h.db.Create(&database.Task{
+	dbTask := &database.Task{
 		Name:  task.Name,
 		Time:  t,
 		Check: false,
-	})
+	}
 
-	return result.Error
+	if err := h.db.Create(dbTask).Error; err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "failed to create task")
+	}
+
+	return c.JSON(http.StatusOK, dbTask)
 }
 
 func (h *taskHandler) DeleteTask(c echo.Context) error {
 	task := &DeleteTaskRequest{}
 	if err := c.Bind(task); err != nil {
-		log.Print(err)
+		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
 
 	log.Print("TaskID:" + task.ID)
 
-	deTask := &database.Task{}
-	if err := h.db.Where("id = ?", task.ID).Delete(&deTask).Error; err != nil {
-		log.Print(err)
-		return c.JSON(http.StatusBadRequest, "failed to delete task")
+	if err := h.db.Where("id = ?", task.ID).Delete(&database.Task{}).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, "task not found")
+		}
+		c.Logger().Error(err)
+		return c.JSON(http.StatusInternalServerError, "failed to delete task")
 	}
 	log.Print("delete task")
 	return c.JSON(http.StatusOK, "success")
@@ -135,25 +148,26 @@ func (h *taskHandler) DeleteTask(c echo.Context) error {
 func (h *taskHandler) UpdateTask(c echo.Context) error {
 	task := &UpdateTaskRequest{}
 	if err := c.Bind(task); err != nil {
-		log.Print(err)
+		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
 
 	log.Print("TaskID:" + task.ID)
 
-	t, err := time.Parse("2006-01-02 15:04:05", task.Time)
+	t, err := time.Parse(time.DateTime, task.Time)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
 
-	upTask := &database.Task{}
-	upTask.ID = task.ID
-	upTask.Name = task.Name
-	upTask.Time = t
-	upTask.Check = task.Check
+	upTask := &database.Task{
+		ID:    task.ID,
+		Name:  task.Name,
+		Time:  t,
+		Check: task.Check,
+	}
 
 	if err := h.db.Where("id = ?", task.ID).Save(&upTask).Error; err != nil {
-		log.Print(err)
+		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "failed to update task")
 	}
 
