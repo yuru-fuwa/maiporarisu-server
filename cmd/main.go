@@ -6,6 +6,7 @@ import (
 	"sqlite/pkg/config"
 	"sqlite/pkg/database"
 	"sqlite/pkg/handler"
+	echovalidator "sqlite/pkg/validator"
 
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
@@ -35,7 +36,9 @@ func main() {
 	taskHandler := handler.NewTaskHandler(db)
 
 	e := echo.New()
-	task := e.Group("/tasks")
+	e.Validator = echovalidator.New()
+	e.Logger.SetLevel(1)
+	task := e.Group("/tasks", testMiddleware)
 	task.GET("", taskHandler.GetTasks)
 	task.POST("", taskHandler.CreateTask)
 	task.GET("/:id", taskHandler.GetTask)
@@ -43,4 +46,11 @@ func main() {
 	task.DELETE("/:id", taskHandler.DeleteTask)
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func testMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Set("test", "test")
+		return next(c)
+	}
 }
