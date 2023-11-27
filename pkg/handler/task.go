@@ -43,7 +43,7 @@ type (
 	}
 
 	CreateTaskRequest struct {
-		Time string `json:"time" validate:"required,datetime=2006-01-02 15:04:05"`
+		Time string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
 		Name string `json:"name"`
 	}
 	CreateTaskResponse struct{}
@@ -55,12 +55,12 @@ type (
 
 	UpdateTaskRequest struct {
 		ID    string `param:"id" validator:"required,uuid"`
-		Time  string `json:"time"`
+		Time  string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
 		Name  string `json:"name"`
 		Check bool   `json:"check"`
 	}
 	UpdateTaskResponse struct {
-		Time  string `json:"time"`
+		Time  string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
 		Name  string `json:"name"`
 		Check bool   `json:"check"`
 	}
@@ -113,9 +113,9 @@ func (h *taskHandler) CreateTask(c echo.Context) error {
 	if err := c.Validate(task); err != nil {
 		return c.JSON(http.StatusBadRequest, "invalid request")
 	}
-	t, err := time.Parse(time.DateTime, task.Time)
+	t, err := time.Parse(time.RFC3339, task.Time)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "invalid request")
+		return c.JSON(http.StatusBadRequest, "invalid time format")
 	}
 
 	dbTask := &database.Task{
@@ -161,9 +161,12 @@ func (h *taskHandler) UpdateTask(c echo.Context) error {
 
 	log.Print("TaskID:" + task.ID)
 
-	t, err := time.Parse(time.DateTime, task.Time)
-	if err != nil {
+	if err := c.Validate(task); err != nil {
 		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+	t, err := time.Parse(time.RFC3339, task.Time)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "invalid time format")
 	}
 
 	upTask := &database.Task{
