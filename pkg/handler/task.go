@@ -20,9 +20,16 @@ type (
 		Check bool
 	}
 
+	SimplifiedTask struct {
+		ID    string    `json:"id"`
+		Time  time.Time `json:"time"`
+		Name  string    `json:"name"`
+		Check bool      `json:"check"`
+	}
+
 	GetTasksRequest  struct{}
 	GetTasksResponse struct {
-		Tasks []Task `json:"tasks"`
+		Tasks []SimplifiedTask `json:"tasks"`
 	}
 
 	GetTaskRequest struct {
@@ -70,13 +77,13 @@ func NewTaskHandler(db *gorm.DB) *taskHandler {
 }
 
 func (h *taskHandler) GetTasks(c echo.Context) error {
-	tasks := []Task{}
+	simplifiedTasks := []SimplifiedTask{}
 
-	if err := h.db.Find(&tasks).Error; err != nil {
+	if err := h.db.Table("tasks").Select("id", "time", "name", "check").Find(&simplifiedTasks).Error; err != nil {
 		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "failed to get tasks")
 	}
-	return c.JSON(http.StatusOK, tasks)
+	return c.JSON(http.StatusOK, simplifiedTasks)
 }
 
 func (h *taskHandler) GetTask(c echo.Context) error {
