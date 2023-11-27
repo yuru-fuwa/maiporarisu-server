@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: dockerfile
     ports:
       - '8080:8080'
     env_file:
