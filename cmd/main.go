@@ -20,6 +20,7 @@ func main() {
 	}
 
 	taskHandler := handler.NewTaskHandler(db)
+	userHandler := handler.NewUserHandler(db)
 
 	e := echo.New()
 	e.Validator = echovalidator.New()
@@ -30,6 +31,10 @@ func main() {
 	task.GET("/:id", taskHandler.GetTask)
 	task.PUT("/:id", taskHandler.UpdateTask)
 	task.DELETE("/:id", taskHandler.DeleteTask)
+
+	user := e.Group("/users")
+	user.GET("", userHandler.GetUsers)
+	user.POST("", userHandler.CreateUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -27,6 +27,7 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 
 	db.AutoMigrate(&Task{})
+	db.AutoMigrate(&User{})
 
 	return db, nil
 }
