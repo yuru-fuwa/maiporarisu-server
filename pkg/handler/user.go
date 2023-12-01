@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"sqlite/pkg/database"
 
@@ -12,7 +13,7 @@ type (
 	User struct {
 		gorm.Model
 		ID          string `gorm:"primaryKey"`
-		ConnectedID *string
+		ConnectedID string
 	}
 
 	GetUsersRequest  struct{}
@@ -24,6 +25,11 @@ type (
 		ID string `json:"id"`
 	}
 	CreateUserResponse struct{}
+
+	UpdateUserRequest struct {
+		ID          string `param:"id"`
+		ConnectedID string `json:"connected_id"`
+	}
 )
 
 type userHandler struct {
@@ -52,7 +58,7 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 
 	dbUser := &database.User{
 		ID:          user.ID,
-		ConnectedID: nil,
+		ConnectedID: "",
 	}
 
 	if err := h.db.Create(dbUser).Error; err != nil {
@@ -61,4 +67,28 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dbUser)
+}
+
+func (h *userHandler) UpdateUser(c echo.Context) error {
+	user := &UpdateUserRequest{}
+	if err := c.Bind(user); err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+
+	log.Print("UserID:" + user.ID)
+	log.Print("ConnectedID:" + user.ConnectedID)
+
+	upUser := &database.User{
+		ID:          user.ID,
+		ConnectedID: user.ConnectedID,
+	}
+
+	if err := h.db.Where("id = ?", user.ID).Save(&upUser).Error; err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "failed to update user")
+	}
+
+	log.Print("update user")
+	return c.JSON(http.StatusOK, "success")
 }

@@ -35,6 +35,7 @@ func main() {
 	user := e.Group("/users")
 	user.GET("", userHandler.GetUsers)
 	user.POST("", userHandler.CreateUser)
+	user.PUT("/:id", userHandler.UpdateUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
