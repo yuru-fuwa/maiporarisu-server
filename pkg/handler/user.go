@@ -21,6 +21,13 @@ type (
 		Users []Task `json:"users"`
 	}
 
+	GetUserRequest struct {
+		ID string `param:"id"`
+	}
+	GetUserResponse struct {
+		ConnectedID string `json:"connected_id"`
+	}
+
 	CreateUserRequest struct {
 		ID string `json:"id"`
 	}
@@ -48,6 +55,17 @@ func (h *userHandler) GetUsers(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "failed to get tasks")
 	}
 	return c.JSON(http.StatusOK, users)
+}
+
+func (h *userHandler) GetUser(c echo.Context) error {
+	id := c.Param("id")
+
+	user := &GetUserResponse{}
+	if err := h.db.Table("users").Select("connected_id").Where("id = ?", id).Find(user).Error; err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "failed to get user")
+	}
+	return c.JSON(http.StatusOK, user)
 }
 
 func (h *userHandler) CreateUser(c echo.Context) error {
