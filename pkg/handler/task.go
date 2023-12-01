@@ -29,7 +29,7 @@ type (
 	}
 
 	GetTasksRequest struct {
-		UserID string `json:"user_id"`
+		UserID string `param:"user_id"`
 	}
 	GetTasksResponse struct {
 		Tasks []SimplifiedTask `json:"tasks"`

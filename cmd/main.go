@@ -26,9 +26,9 @@ func main() {
 	e.Validator = echovalidator.New()
 	e.Logger.SetLevel(1)
 	task := e.Group("/tasks", testMiddleware)
-	task.GET("", taskHandler.GetTasks)
+	task.GET("/:user_id", taskHandler.GetTasks)
 	task.POST("", taskHandler.CreateTask)
-	task.GET("/:id", taskHandler.GetTask)
+	//task.GET("/:id", taskHandler.GetTask)
 	task.PUT("/:id", taskHandler.UpdateTask)
 	task.DELETE("/:id", taskHandler.DeleteTask)
 
