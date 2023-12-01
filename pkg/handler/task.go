@@ -14,10 +14,11 @@ import (
 type (
 	Task struct {
 		gorm.Model
-		ID    string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
-		Time  time.Time
-		Name  string `gorm:"size:256"`
-		Check bool
+		ID     string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
+		UserID string
+		Time   time.Time
+		Name   string `gorm:"size:256"`
+		Check  bool
 	}
 
 	SimplifiedTask struct {
@@ -27,7 +28,9 @@ type (
 		Check bool      `json:"check"`
 	}
 
-	GetTasksRequest  struct{}
+	GetTasksRequest struct {
+		UserID string `json:"user_id"`
+	}
 	GetTasksResponse struct {
 		Tasks []SimplifiedTask `json:"tasks"`
 	}
@@ -43,8 +46,9 @@ type (
 	}
 
 	CreateTaskRequest struct {
-		Time string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
-		Name string `json:"name"`
+		UserID string `json:"user_id"`
+		Time   string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
+		Name   string `json:"name"`
 	}
 	CreateTaskResponse struct{}
 
@@ -54,10 +58,11 @@ type (
 	DeleteTaskResponse struct{}
 
 	UpdateTaskRequest struct {
-		ID    string `param:"id" validator:"required,uuid"`
-		Time  string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
-		Name  string `json:"name"`
-		Check bool   `json:"check"`
+		ID     string `param:"id" validator:"required,uuid"`
+		UserID string `json:"user_id"`
+		Time   string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
+		Name   string `json:"name"`
+		Check  bool   `json:"check"`
 	}
 	UpdateTaskResponse struct {
 		Time  string `json:"time" validator:"required,datetime=2006-01-02T15:04:05Z07:00"`
@@ -79,7 +84,13 @@ func NewTaskHandler(db *gorm.DB) *taskHandler {
 func (h *taskHandler) GetTasks(c echo.Context) error {
 	simplifiedTasks := []SimplifiedTask{}
 
-	if err := h.db.Table("tasks").Select("id", "time", "name", "check").Find(&simplifiedTasks).Error; err != nil {
+	task := &GetTasksRequest{}
+	if err := c.Bind(task); err != nil {
+		c.Logger().Error(err)
+		return c.JSON(http.StatusBadRequest, "invalid request")
+	}
+
+	if err := h.db.Table("tasks").Select("id", "time", "name", "check").Where("user_id = ?", task.UserID).Find(&simplifiedTasks).Error; err != nil {
 		c.Logger().Error(err)
 		return c.JSON(http.StatusBadRequest, "failed to get tasks")
 	}
@@ -119,9 +130,10 @@ func (h *taskHandler) CreateTask(c echo.Context) error {
 	}
 
 	dbTask := &database.Task{
-		Name:  task.Name,
-		Time:  t,
-		Check: false,
+		UserID: task.UserID,
+		Name:   task.Name,
+		Time:   t,
+		Check:  false,
 	}
 
 	if err := h.db.Create(dbTask).Error; err != nil {
@@ -170,10 +182,11 @@ func (h *taskHandler) UpdateTask(c echo.Context) error {
 	}
 
 	upTask := &database.Task{
-		ID:    task.ID,
-		Name:  task.Name,
-		Time:  t,
-		Check: task.Check,
+		ID:     task.ID,
+		UserID: task.UserID,
+		Name:   task.Name,
+		Time:   t,
+		Check:  task.Check,
 	}
 
 	if err := h.db.Where("id = ?", task.ID).Save(&upTask).Error; err != nil {
