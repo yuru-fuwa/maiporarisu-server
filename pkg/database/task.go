@@ -18,7 +18,8 @@ type Task struct {
 	gorm.Model
 	ID string `gorm:"primaryKey;size:255;default:uuid_generate_v4()"`
 	//ID    int `gorm:"primaryKey,autoincrement"`
-	Time  time.Time
-	Name  string `gorm:"size:256"`
-	Check bool
+	UserID string
+	Time   time.Time
+	Name   string `gorm:"size:256"`
+	Check  bool
 }

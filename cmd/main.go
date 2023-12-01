@@ -12,20 +12,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// func handleRoutes() {
-
-// 	taskHandler := handler.NewTaskHandler()
-
-// 	e := echo.New()
-// 	task := e.Group("/tasks")
-// 	task.GET("", taskHandler.GetTasks)
-// 	task.POST("", taskHandler.CreateTask)
-// 	task.GET("/:id", taskHandler.GetTask)
-// 	task.PUT("/:id", taskHandler.UpdateTask)
-// 	task.DELETE("/:id", taskHandler.DeleteTask)
-
-// 	e.Logger.Fatal(e.Start(":8080"))
-
 func main() {
 	cfg := config.New()
 	db, err := database.NewDB(cfg)
@@ -34,6 +20,7 @@ func main() {
 	}
 
 	taskHandler := handler.NewTaskHandler(db)
+	userHandler := handler.NewUserHandler(db)
 
 	e := echo.New()
 	e.Validator = echovalidator.New()
@@ -44,6 +31,12 @@ func main() {
 	task.GET("/:id", taskHandler.GetTask)
 	task.PUT("/:id", taskHandler.UpdateTask)
 	task.DELETE("/:id", taskHandler.DeleteTask)
+
+	user := e.Group("/users")
+	user.GET("", userHandler.GetUsers)
+	user.POST("", userHandler.CreateUser)
+	user.GET("/:id", userHandler.GetUser)
+	user.PUT("/:id", userHandler.UpdateUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
